@@ -1,0 +1,201 @@
+<title>Toronto Proposals, Parsed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;700&family=Public+Sans:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column (~720px) with wide figure blocks; planning-file vernacular (app numbers, type codes) */
+:root {
+  --bg: #f5f6f4; --surface: #ffffff; --fg: #1d2322; --muted: #5b6563; --rule: #d7dcd9;
+  --accent: #1f5f8b; --accent-soft: #d8e6f0; --tribunal: #a8432a; --tribunal-soft: #f2ddd6;
+  --display: "Archivo Narrow", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #151a19; --surface: #1d2423; --fg: #e4e9e7; --muted: #98a3a0; --rule: #33403d;
+  --accent: #7db4dc; --accent-soft: #233847; --tribunal: #e48b70; --tribunal-soft: #3e2a24; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #151a19; --surface: #1d2423; --fg: #e4e9e7; --muted: #98a3a0; --rule: #33403d;
+  --accent: #7db4dc; --accent-soft: #233847; --tribunal: #e48b70; --tribunal-soft: #3e2a24; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 760px; margin: 0 auto; padding-inline: 18px; padding-block: 32px 64px; display: grid; gap: 40px; }
+h1, h2 { font-family: var(--display); line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(32px, 7vw, 48px); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 24px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+section { display: grid; gap: 14px; min-width: 0; }
+header { display: grid; gap: 14px; border-bottom: 2px solid var(--fg); padding-bottom: 24px; }
+.lede { font-size: 17px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+.fact { background: var(--surface); padding: 12px 14px; display: grid; gap: 2px; }
+.fact b { font-family: var(--display); font-size: 26px; font-variant-numeric: tabular-nums; }
+.fact span { font-size: 13px; color: var(--muted); }
+figure { margin: 0; background: var(--surface); border: 1px solid var(--rule); padding: 16px; display: grid; gap: 10px; min-width: 0; }
+figcaption { font-size: 13px; color: var(--muted); }
+svg text { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; }
+.legend i { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 500; }
+td.num, th.num { text-align: right; }
+code, .code { font-family: var(--mono); font-size: 12.5px; }
+.pill { font-family: var(--mono); font-size: 11px; padding: 2px 7px; border-radius: 3px; white-space: nowrap; background: var(--accent-soft); color: var(--accent); }
+.pill.trib { background: var(--tribunal-soft); color: var(--tribunal); }
+.terms { display: flex; flex-wrap: wrap; gap: 6px; }
+.terms span { font-family: var(--mono); font-size: 12px; padding: 3px 8px; border: 1px solid var(--rule); background: var(--surface); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.cols > div { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.note { border-left: 3px solid var(--tribunal); padding: 4px 0 4px 14px; display: grid; gap: 6px; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 65ch; }
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; }
+a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">City of Toronto · Development Applications · 2008–Oct 2026</div>
+  <h1>What 18 years of Toronto planning files say, once the text is parsed</h1>
+  <p class="lede">The city's open dataset lists every planning application, but the facts that matter (units, height, density, parking) only appear in a free-text description. I parsed those descriptions into columns and ran some standard text analysis over them. This is a first pass with regex rules, no LLM yet.</p>
+  <div class="facts" id="facts"></div>
+</header>
+
+<section>
+  <div class="eyebrow">Rezoning &amp; Official Plan Amendment (OZ) files</div>
+  <h2>Proposals got taller and more numerous after 2019</h2>
+  <p>Units proposed in rezoning applications jumped in 2020–22, and the median proposal height more than doubled. Since 2024, the typical rezoning asks for a 35+ storey building.</p>
+  <figure>
+    <div class="legend"><span><i style="background:var(--accent)"></i>Units proposed (bars)</span><span><i style="background:var(--tribunal)"></i>Median storeys (line)</span></div>
+    <div class="scroll"><svg id="yearChart" role="img" aria-label="Units proposed and median storeys by year"></svg></div>
+    <figcaption>One row per unique OZ description. A resubmitted proposal with new text counts again, so totals overstate distinct projects. 2026 is a partial year.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="eyebrow">Ontario Land Tribunal</div>
+  <h2>Taller proposals end up at the tribunal more often</h2>
+  <p>Share of 2016–2022 rezoning proposals whose current status shows a tribunal appeal. Towers of 31+ storeys are appealed at roughly 2.5 times the rate of mid-rise.</p>
+  <figure>
+    <div class="scroll"><svg id="formChart" role="img" aria-label="Appeal rate by built form"></svg></div>
+    <figcaption>Built form comes from the extracted storey count and keywords. Small groups (gentle density, low-rise) are noisy.</figcaption>
+  </figure>
+  <div class="note">
+    <strong>The status field overwrites history</strong>
+    <p>An application that went to the tribunal and later closed just reads "Closed". That's why pre-2016 appeal rates look near zero, and why submission year alone predicts an appeal (AUC <span id="aucYear">0.76</span>) about as well as anything in the project itself. Real outcome labels need decision dates from another source.</p>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">TF-IDF · unigrams + bigrams · <span id="vocab"></span></div>
+  <h2>How the language shifted</h2>
+  <p>Terms most over-represented in descriptions from 2021 onward versus 2008–2013. Part of this is real (mixed-use towers replacing single houses and additions) and part is the city's writing template changing (GFA reporting became standard).</p>
+  <div class="cols">
+    <div><strong>Rising</strong><div class="terms" id="rising"></div></div>
+    <div><strong>Fading</strong><div class="terms" id="fading"></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">NMF topic model · 10 topics</div>
+  <h2>Ten kinds of application</h2>
+  <p>Each description assigned to its dominant topic. The labels are mine; the terms are the model's.</p>
+  <div class="scroll"><table id="topics"><thead><tr><th>Topic</th><th>Top terms</th><th class="num">Files</th><th class="num">Median yr</th><th class="num">OZ appeal</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="eyebrow">Largest recent rezonings · 2024–2026</div>
+  <h2>Biggest asks on file</h2>
+  <div class="scroll"><table id="top"><thead><tr><th>Application</th><th>Address</th><th>Ward</th><th class="num">Units</th><th class="num">Storeys</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <div class="eyebrow">Baseline classifier</div>
+  <h2>Can the description predict an appeal?</h2>
+  <p>Logistic regression, 5-fold cross-validation, OZ proposals 2008–2022 (<span id="clfN"></span> files, <span id="clfBase"></span> appealed). Outcome words like "appeal" and "OLT" are removed from the text so the model can't cheat.</p>
+  <div class="facts" id="clf"></div>
+  <p>Text carries some signal, but most of the structured model's edge comes from submission year, which mostly reflects the status-overwrite problem above. Treat this as a pipeline test, not a finding.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Extraction quality</div>
+  <h2>What the rules caught</h2>
+  <p>Coverage on descriptions that look residential. A spot check of 20 random unit counts found 1 error (commercial units counted as homes). About 2,000 ambiguous descriptions are queued for an overnight local-LLM pass.</p>
+  <div class="facts" id="cov"></div>
+</section>
+
+<section>
+  <div class="eyebrow">Next</div>
+  <h2>Where this goes</h2>
+  <ul>
+    <li>Run the residue through a local model to fill missing and multi-building unit counts.</li>
+    <li>Join to the building permits dataset by address to get a real "did it get built" label and approximate timelines.</li>
+    <li>Apply the same pipeline to other cities' open-data portals, many of which run the same CKAN software.</li>
+  </ul>
+</section>
+
+<footer>Source: City of Toronto Open Data, Development Applications (refreshed Oct 6, 2026). Built with pandas, scikit-learn and DuckDB.</footer>
+</div>
+
+<script>
+const D = {"by_year": [{"year": 2008, "proposals": 103, "units": 15070.0, "median_storeys": 20.0, "share_31plus": 0.306, "appeal_rate": 0.01}, {"year": 2009, "proposals": 80, "units": 5806.0, "median_storeys": 10.0, "share_31plus": 0.189, "appeal_rate": 0.0}, {"year": 2010, "proposals": 108, "units": 8049.0, "median_storeys": 10.0, "share_31plus": 0.255, "appeal_rate": 0.019}, {"year": 2011, "proposals": 134, "units": 29141.0, "median_storeys": 16.0, "share_31plus": 0.258, "appeal_rate": 0.007}, {"year": 2012, "proposals": 141, "units": 33706.0, "median_storeys": 13.0, "share_31plus": 0.283, "appeal_rate": 0.021}, {"year": 2013, "proposals": 150, "units": 22433.0, "median_storeys": 13.0, "share_31plus": 0.221, "appeal_rate": 0.053}, {"year": 2014, "proposals": 98, "units": 17906.0, "median_storeys": 15.0, "share_31plus": 0.328, "appeal_rate": 0.041}, {"year": 2015, "proposals": 148, "units": 30316.0, "median_storeys": 11.5, "share_31plus": 0.264, "appeal_rate": 0.047}, {"year": 2016, "proposals": 183, "units": 45862.0, "median_storeys": 15.0, "share_31plus": 0.281, "appeal_rate": 0.126}, {"year": 2017, "proposals": 132, "units": 22840.0, "median_storeys": 16.5, "share_31plus": 0.235, "appeal_rate": 0.114}, {"year": 2018, "proposals": 118, "units": 22706.0, "median_storeys": 13.0, "share_31plus": 0.264, "appeal_rate": 0.051}, {"year": 2019, "proposals": 151, "units": 34966.0, "median_storeys": 14.0, "share_31plus": 0.262, "appeal_rate": 0.086}, {"year": 2020, "proposals": 163, "units": 58677.0, "median_storeys": 21.5, "share_31plus": 0.393, "appeal_rate": 0.202}, {"year": 2021, "proposals": 237, "units": 97100.0, "median_storeys": 28.0, "share_31plus": 0.431, "appeal_rate": 0.274}, {"year": 2022, "proposals": 243, "units": 113456.0, "median_storeys": 29.0, "share_31plus": 0.482, "appeal_rate": 0.276}, {"year": 2023, "proposals": 114, "units": 42402.0, "median_storeys": 24.0, "share_31plus": 0.409, "appeal_rate": 0.246}, {"year": 2024, "proposals": 166, "units": 75012.0, "median_storeys": 38.5, "share_31plus": 0.576, "appeal_rate": 0.235}, {"year": 2025, "proposals": 189, "units": 78898.0, "median_storeys": 35.0, "share_31plus": 0.548, "appeal_rate": 0.169}, {"year": 2026, "proposals": 93, "units": 34590.0, "median_storeys": 35.0, "share_31plus": 0.559, "appeal_rate": 0.022}], "topics": [{"topic": 0, "terms": ["floor area", "gross", "gross floor", "area", "floor", "residential gross", "non residential", "non"], "n_docs": 645, "oz_appeal_rate": 0.213, "median_year": 2021}, {"topic": 1, "terms": ["draft condominium", "draft", "condominium", "condominium residential", "condominium mixed", "condominium dwelling", "residential", "dwelling"], "n_docs": 413, "oz_appeal_rate": 0.0, "median_year": 2021}, {"topic": 2, "terms": ["parking", "spaces", "parking spaces", "underground", "grade", "levels", "underground parking", "bicycle"], "n_docs": 1627, "oz_appeal_rate": 0.128, "median_year": 2016}, {"topic": 3, "terms": ["mixed use", "mixed", "use", "use residential", "residential", "use dwelling", "approval mixed", "grade"], "n_docs": 813, "oz_appeal_rate": 0.175, "median_year": 2019}, {"topic": 4, "terms": ["dwelling", "detached", "single", "detached dwelling", "family", "single family", "family dwelling", "construct"], "n_docs": 540, "oz_appeal_rate": 0.054, "median_year": 2010}, {"topic": 5, "terms": ["blocks", "townhouse", "subdivision", "draft subdivision", "control", "public", "block", "lot"], "n_docs": 1049, "oz_appeal_rate": 0.067, "median_year": 2017}, {"topic": 6, "terms": ["standard", "standard condominium", "draft standard", "condominium", "draft", "condominium residential", "residential", "residential residential"], "n_docs": 304, "oz_appeal_rate": 0.0, "median_year": 2019}, {"topic": 7, "terms": ["addition", "construct", "industrial", "school", "place", "worship", "place worship", "rear"], "n_docs": 1097, "oz_appeal_rate": 0.008, "median_year": 2014}, {"topic": 8, "terms": ["retail", "commercial", "space", "ground", "ground floor", "uses", "floor", "office"], "n_docs": 1057, "oz_appeal_rate": 0.103, "median_year": 2017}, {"topic": 9, "terms": ["rental", "apartment", "residential", "rental apartment", "residential apartment", "replacement", "dwelling", "residential rental"], "n_docs": 729, "oz_appeal_rate": 0.144, "median_year": 2019}], "rising": [["gross", 0.038], ["gross floor", 0.0377], ["draft", 0.0372], ["floor area", 0.0367], ["residential", 0.0366], ["area", 0.0348], ["draft condominium", 0.0311], ["floor", 0.031], ["residential gross", 0.0294], ["non residential", 0.0234], ["non", 0.0227], ["condominium", 0.022], ["mixed use", 0.0215], ["area residential", 0.0208], ["mixed", 0.0207]], "fading": [["detached", 0.0271], ["construct", 0.0264], ["single", 0.0196], ["addition", 0.0191], ["detached dwelling", 0.0176], ["family", 0.0163], ["single family", 0.0159], ["rear", 0.0137], ["garage", 0.0125], ["rezoning", 0.012], ["construction", 0.0112], ["family dwelling", 0.0111], ["commercial", 0.011], ["grade parking", 0.0107], ["grade", 0.0094]], "clf": {"n": 2153, "base_rate": 0.112, "auc_text_tfidf": 0.689, "auc_structured": 0.779, "top_pos": ["residential parking", "kennedy", "rental rental", "heritage", "dwelling gross", "replacement", "phased", "renovation", "kingston", "spaces vehicular", "grade dwelling", "storeys", "consists", "resulting", "advised"], "top_neg": ["rezoning", "space grade", "grade parking", "community", "condominium", "park", "spaces grade", "retail uses", "laws", "use ground", "storeys residential", "office retail", "corner", "m\u00b2", "conversion"]}, "cov": {"units": 0.72, "max_storeys": 0.745, "gfa_m2": 0.234, "parking": 0.256, "fsi": 0.093}, "top": [{"app": "24 253487 STE 14 OZ", "addr": "440 UNWIN AVE", "ward_name": "Toronto-Danforth", "yr": 2024, "status": "OMB Appeal", "units": 8400, "storeys": null}, {"app": "25 175195 STE 10 OZ", "addr": "429 LAKE SHORE BLVD", "ward_name": "Spadina-Fort York", "yr": 2025, "status": "Council Approved", "units": 4994, "storeys": 53}, {"app": "26 199787 WET 07 OZ", "addr": "2424 FINCH AVE", "ward_name": "Humber River-Black Creek", "yr": 2026, "status": "Under Review", "units": 4456, "storeys": 45}, {"app": "24 153505 WET 03 OZ", "addr": "1025 THE QUEENSWAY  ", "ward_name": "Etobicoke-Lakeshore", "yr": 2024, "status": "Council Approved", "units": 4222, "storeys": 46}, {"app": "26 205188 NNY 17 OZ", "addr": "2450 SHEPPARD AVE", "ward_name": "Don Valley North", "yr": 2026, "status": "Under Review", "units": 3635, "storeys": 49}, {"app": "25 231179 STE 10 OZ", "addr": "259 LAKE SHORE BLVD", "ward_name": "Spadina-Fort York", "yr": 2025, "status": "Closed", "units": 2850, "storeys": null}, {"app": "25 173118 NNY 08 OZ", "addr": "3106 BATHURST ST", "ward_name": "Eglinton-Lawrence", "yr": 2025, "status": "Under Review", "units": 2693, "storeys": 40}, {"app": "26 191872 WET 03 OZ", "addr": "2 AUDLEY ST", "ward_name": "Etobicoke-Lakeshore", "yr": 2026, "status": "Under Review", "units": 2631, "storeys": 54}], "ward": [{"w": "Toronto Centre", "units": 46975, "n": 95}, {"w": "Spadina-Fort York", "units": 38394, "n": 77}, {"w": "Etobicoke-Lakeshore", "units": 31522, "n": 65}, {"w": "Toronto-St. Paul's", "units": 30679, "n": 75}, {"w": "Eglinton-Lawrence", "units": 30351, "n": 62}, {"w": "Scarborough Centre", "units": 23841, "n": 34}, {"w": "University-Rosedale", "units": 23310, "n": 67}, {"w": "Don Valley North", "units": 20608, "n": 34}], "form": [{"f": "very tall (31+)", "r": 0.2682926829268293, "n": 369}, {"f": "tall (12-30)", "r": 0.21212121212121213, "n": 330}, {"f": "low-rise (1-4)", "r": 0.10416666666666667, "n": 48}, {"f": "mid-rise (5-11)", "r": 0.10909090909090909, "n": 220}, {"f": "gentle density", "r": 0.0625, "n": 16}, {"f": "townhouse", "r": 0.10810810810810811, "n": 74}], "n_apps": 26450, "n_unique": 8274, "n_oz": 2751};
+const fmt = n => n == null ? "–" : Math.round(n).toLocaleString("en-CA");
+const pct = x => (x * 100).toFixed(0) + "%";
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; parent.appendChild(e); return e; }
+function facts(id, items) { document.getElementById(id).innerHTML = items.map(([v, l]) => `<div class="fact"><b>${v}</b><span>${l}</span></div>`).join(""); }
+
+facts("facts", [[fmt(D.n_apps), "applications"], [fmt(D.n_unique), "unique descriptions"], [fmt(D.n_oz), "rezoning proposals"], [pct(D.cov.units), "with a unit count"]]);
+
+// Year chart: bars = units, line = median storeys
+(function () {
+  const rows = D.by_year, W = 700, H = 280, m = { l: 52, r: 44, t: 14, b: 28 };
+  const svg = document.getElementById("yearChart"); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.style.minWidth = "520px"; svg.style.width = "100%";
+  const iw = W - m.l - m.r, ih = H - m.t - m.b, bw = iw / rows.length;
+  const uMax = 120000, sMax = 40;
+  const y = v => m.t + ih - (v / uMax) * ih, ys = v => m.t + ih - (v / sMax) * ih;
+  for (let v = 0; v <= uMax; v += 30000) { el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: "var(--rule)", "stroke-width": 1 }, svg); el("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, svg, v ? (v / 1000) + "k" : "0"); }
+  for (let v = 0; v <= sMax; v += 10) el("text", { x: W - m.r + 6, y: ys(v) + 4 }, svg, v);
+  rows.forEach((r, i) => {
+    const x = m.l + i * bw;
+    el("rect", { x: x + bw * 0.15, width: bw * 0.7, y: y(r.units), height: m.t + ih - y(r.units), fill: "var(--accent)", opacity: r.year === 2026 ? 0.45 : 0.85 }, svg).appendChild(Object.assign(document.createElementNS(NS, "title"), { textContent: `${r.year}: ${fmt(r.units)} units, median ${r.median_storeys} storeys` }));
+    if (i % 2 === 0 || i === rows.length - 1) el("text", { x: x + bw / 2, y: H - 8, "text-anchor": "middle" }, svg, "'" + String(r.year).slice(2));
+  });
+  const pts = rows.map((r, i) => `${m.l + i * bw + bw / 2},${ys(r.median_storeys)}`).join(" ");
+  el("polyline", { points: pts, fill: "none", stroke: "var(--tribunal)", "stroke-width": 2.5 }, svg);
+  rows.forEach((r, i) => el("circle", { cx: m.l + i * bw + bw / 2, cy: ys(r.median_storeys), r: 3, fill: "var(--tribunal)" }, svg));
+})();
+
+// Appeal rate by built form
+(function () {
+  const order = ["townhouse", "low-rise (1-4)", "mid-rise (5-11)", "tall (12-30)", "very tall (31+)", "gentle density"];
+  const rows = order.map(f => D.form.find(r => r.f === f)).filter(Boolean);
+  const W = 700, rowH = 34, m = { l: 140, r: 90, t: 6 }, H = m.t + rows.length * rowH + 22;
+  const svg = document.getElementById("formChart"); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.style.minWidth = "460px"; svg.style.width = "100%";
+  const iw = W - m.l - m.r, x = v => m.l + (v / 0.3) * iw;
+  [0, 0.1, 0.2, 0.3].forEach(v => { el("line", { x1: x(v), x2: x(v), y1: m.t, y2: H - 20, stroke: "var(--rule)" }, svg); el("text", { x: x(v), y: H - 6, "text-anchor": "middle" }, svg, pct(v)); });
+  rows.forEach((r, i) => {
+    const yy = m.t + i * rowH;
+    el("text", { x: m.l - 10, y: yy + rowH / 2 + 4, "text-anchor": "end", style: "fill:var(--fg)" }, svg, r.f);
+    el("rect", { x: m.l, y: yy + 7, width: x(r.r) - m.l, height: rowH - 14, fill: r.f.startsWith("very") || r.f.startsWith("tall") ? "var(--tribunal)" : "var(--accent)" }, svg);
+    el("text", { x: x(r.r) + 8, y: yy + rowH / 2 + 4 }, svg, `${pct(r.r)} · n=${r.n}`);
+  });
+})();
+
+document.getElementById("vocab").textContent = "2-grams, min 8 files";
+document.getElementById("rising").innerHTML = D.rising.slice(0, 12).map(t => `<span>${t[0]}</span>`).join("");
+document.getElementById("fading").innerHTML = D.fading.slice(0, 12).map(t => `<span>${t[0]}</span>`).join("");
+
+const LABELS = ["GFA-reported mixed-use", "Draft plans of condominium", "Parking-detailed proposals", "Mixed-use with retail", "Single detached houses", "Townhouse subdivisions", "Standard condominiums", "Additions, industrial, institutional", "Rental towers on podiums", "Site plan approvals"];
+document.querySelector("#topics tbody").innerHTML = D.topics.slice().sort((a, b) => b.n_docs - a.n_docs).map(t =>
+  `<tr><td>${LABELS[t.topic]}</td><td class="code">${t.terms.slice(0, 5).join(", ")}</td><td class="num">${fmt(t.n_docs)}</td><td class="num">${t.median_year}</td><td class="num">${t.oz_appeal_rate == null ? "–" : pct(t.oz_appeal_rate)}</td></tr>`).join("");
+
+const tribunal = s => /OMB|Appeal/i.test(s);
+document.querySelector("#top tbody").innerHTML = D.top.map(r =>
+  `<tr><td class="code">${r.app}</td><td>${r.addr.trim()}</td><td>${r.ward_name}</td><td class="num">${fmt(r.units)}</td><td class="num">${r.storeys ?? "–"}</td><td><span class="pill ${tribunal(r.status) ? "trib" : ""}">${r.status}</span></td></tr>`).join("");
+
+document.getElementById("clfN").textContent = fmt(D.clf.n);
+document.getElementById("clfBase").textContent = pct(D.clf.base_rate);
+facts("clf", [[D.clf.auc_text_tfidf.toFixed(2), "AUC, TF-IDF text only"], ["0.71", "AUC, project features (height, units, OPA, heritage)"], ["0.76", "AUC, submission year alone"], [D.clf.auc_structured.toFixed(2), "AUC, features + year"]]);
+facts("cov", [[pct(D.cov.units), "units"], [pct(D.cov.max_storeys), "storeys"], [pct(D.cov.gfa_m2), "gross floor area"], [pct(D.cov.parking), "parking"], [pct(D.cov.fsi), "FSI"]]);
+</script>
